@@ -1,9 +1,7 @@
 NASP3::Application.routes.draw do
   root to: 'home#index'
 
-  namespace :binary_tree do
-    root to: 'binary_tree#show'
-  end
+  match '/binary_tree' => 'binary_tree#show'
 
   match '/rb_tree' => 'rb_tree#show'
 
