@@ -1,0 +1,117 @@
+@import "twitter/bootstrap/bootstrap";
+@import "twitter/bootstrap/responsive";
+
+// Set the correct sprite paths
+@iconSpritePath: image-url("twitter/bootstrap/glyphicons-halflings.png");
+@iconWhiteSpritePath: image-url("twitter/bootstrap/glyphicons-halflings-white.png");
+
+// Set the Font Awesome (Font Awesome is default. You can disable by commenting below lines)
+@fontAwesomeEotPath: asset-url("fontawesome-webfont.eot");
+@fontAwesomeEotPath_iefix: asset-url("fontawesome-webfont.eot?#iefix");
+@fontAwesomeWoffPath: asset-url("fontawesome-webfont.woff");
+@fontAwesomeTtfPath: asset-url("fontawesome-webfont.ttf");
+@fontAwesomeSvgPath: asset-url("fontawesome-webfont.svg#fontawesomeregular");
+
+// Font Awesome
+@import "fontawesome/font-awesome";
+
+// Glyphicons
+//@import "twitter/bootstrap/sprites.less";
+
+// Your custom LESS stylesheets goes here
+//
+// Since bootstrap was imported above you have access to its mixins which
+// you may use and inherit here
+//
+// If you'd like to override bootstrap's own variables, you can do so here as well
+// See http://twitter.github.com/bootstrap/customize.html#variables for their names and documentation
+//
+// Example:
+// @linkColor: #ff0000;
+
+//// override bootrap selectors
+body {
+  padding-top: 60px;
+}
+.pagination {
+  margin: 0;
+}
+
+//// define site specific selectors
+.calign {
+  text-align: center !important;
+}
+.ralign {
+  text-align: right !important;
+}
+.hidden {
+  display: none;
+}
+form .help-block {
+  margin: 0 !important;
+  font-size: 0.8em;
+  font-style: italic;
+}
+form .control-group.select2 {
+  width: 100%;
+}
+
+form .select2{
+  width: 220px;
+}
+form textarea {
+  width: 600px;
+  height: 100px;
+}
+.main {
+  padding: 0 20px;
+}
+.navbar {
+  min-width: 1100px;
+}
+.footer {
+  background-color: #F5F5F5;
+  border-top: 1px solid #E5E5E5;
+  margin-top: 20px;
+  padding: 30px 20px;
+  min-width: 1100px;
+  text-align: center;
+}
+
+#upload-button {
+  position:relative;
+  overflow:hidden;
+}
+
+#upload-button input{
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  border: solid transparent;
+  border-width: 0 0 100px 200px;
+  opacity: 0;
+  filter: alpha(opacity=0);
+  -moz-transform: translate(-300px, 0) scale(4);
+  direction: ltr;
+  cursor: pointer;
+}
+
+.comment img {
+  height: 60px;
+  width: 60px;
+}
+
+.application img {
+  height: 60px;
+  width: 60px;
+}
+
+#notifications .dropdown-menu {
+  min-width: 350px;
+  font-size: 0.85em;
+}
+.anchor {
+  position: relative;
+  top: -50px;
+}

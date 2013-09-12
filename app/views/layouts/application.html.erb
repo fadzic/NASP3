@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>NASP</title>
+  <%= include_gon %>
+  <%= stylesheet_link_tag    'application', media: 'all' %>
+  <%= javascript_include_tag 'application' %>
+  <%= yield :javascripts -%>
+</head>
+
+<body data-controller="<%= controller_name %>" data-action="<%= action_name %>">
+
+<%= render 'layouts/header' %>
+
+
+<div class="container">
+
+  <% flash.each do |name, msg| %>
+      <div class="alert alert-<%= name == :notice ? 'success' : 'error' %>">
+        <a class="close" data-dismiss="alert">×</a>
+        <%= msg %>
+      </div>
+  <% end %>
+
+  <%= yield %>
+
+</div>
+
+<%= render 'layouts/footer' %>
+
+</body>
+</html>

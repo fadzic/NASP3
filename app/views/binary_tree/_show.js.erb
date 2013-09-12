@@ -1,0 +1,46 @@
+$(function() {
+
+    init();
+
+    bst = new BinarySearchTree
+
+    //draw(bst.toString());
+})
+
+
+function censor(key, value) {
+    if (typeof value === 'object' && value !== null) {
+        if (cache.indexOf(value) !== -1) {
+            // Circular reference found, discard key
+            return;
+        }
+        // Store value in our collection
+        cache.push(value);
+    }
+    return value;
+}
+
+function addElement(e){
+    bst.add(parseFloat(e))
+
+    mujo={}
+    mujo = JSON.stringify(bst["_root"])
+    mujo=mujo.replace(/null/gi,"{}")
+    mujo=JSON.parse(mujo)
+
+    //console.log(mujo)
+    draw(mujo)
+}
+
+function delElement(e){
+    bst.remove(e)
+
+    mujo={}
+    mujo = JSON.stringify(bst["_root"])
+    mujo=mujo.replace(/null/gi,"{}")
+    mujo=JSON.parse(mujo)
+
+    //console.log(mujo)
+    draw(mujo)
+
+}

@@ -1,0 +1,50 @@
+$(function() {
+
+    init();
+
+    bst = new AVLTree('node')
+
+    //draw(bst.toString());
+
+})
+var cache = [];
+
+function censor(key, value) {
+    if (typeof value === 'object' && value !== null) {
+        if (cache.indexOf(value) !== -1) {
+            // Circular reference found, discard key
+            return;
+        }
+        // Store value in our collection
+        cache.push(value);
+    }
+    return value;
+}
+
+function addElement(e){
+    bst.add(parseFloat(e))
+    console.log(bst)
+    mujo={}
+    mujo = JSON.stringify(bst["root"],censor)
+    cache = []
+
+    mujo=mujo.replace(/null/gi,"{}")
+    mujo=JSON.parse(mujo)
+    //console.log(mujo)
+    draw(mujo)
+
+}
+
+function delElement(e){
+    bst.remove(parseFloat(e))
+
+    mujo={}
+    mujo = JSON.stringify(bst["root"],censor)
+    console.log(bst)
+    mujo=mujo.replace(/null/gi,"{}")
+    mujo=JSON.parse(mujo)
+
+    //console.log(mujo)
+    draw(mujo)
+
+}

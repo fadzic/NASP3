@@ -1,0 +1,2 @@
+class HeapTreeController < ApplicationController
+end

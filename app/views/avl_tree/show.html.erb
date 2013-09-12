@@ -1,0 +1,12 @@
+<% content_for(:javascripts) do %>
+    <script type='text/javascript'>
+        <%= render :partial => 'show.js' %>
+    </script>
+<% end -%>
+
+<input type="number" id="input"><br>
+<a class="btn" onclick="addElement($('#input').val())">Dodaj</a>
+<a class="btn" onclick="delElement($('#input').val())">Obrisi</a>
+
+<div id="canvas">
+</div>
