@@ -139,6 +139,7 @@ DEPENDENCIES
   coffee-rails (~> 3.2.1)
   d3-rails
   devise
+  execjs
   gon
   jquery-rails
   less-rails
