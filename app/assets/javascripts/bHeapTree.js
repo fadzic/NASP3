@@ -268,16 +268,16 @@ heapTree.prototype = {
         var node = this.root
         var stack = []
 
-        while (node || stack.size()!=0) {
+        while (node || stack.length>0) {
             if (node) {
                 if(node.name===v) return node
                 // go left as far as possible, push to the stack
                 stack.push(node);
-                node = node.children[0];
+                if ($.inArray(node, stack)) node = node.children[1];
+                else node = node.children[0];
             } else {
                 // we are at the bottom, pop from the stack
-                node = stack.top();
-                stack.pop();
+                node = stack.pop();
                 node = node.children[1];
             }
         }

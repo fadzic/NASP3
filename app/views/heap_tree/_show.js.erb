@@ -39,7 +39,7 @@ function delElement(e){
 
     mujo={}
     mujo = JSON.stringify(bst["root"],censor)
-        console.log(bst)
+    cache = []
         mujo=mujo.replace(/null/gi,"{}")
         mujo=JSON.parse(mujo)
 
