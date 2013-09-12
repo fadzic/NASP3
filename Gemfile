@@ -60,3 +60,7 @@ gem "twitter-bootstrap-rails"
 gem "d3-rails"
 
 gem 'gon'
+
+gem 'execjs'
+
+gem 'therubyracer'
