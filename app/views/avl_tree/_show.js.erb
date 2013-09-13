@@ -1,8 +1,7 @@
 $(function() {
 
     init();
-
-    bst = new AVLTree('node')
+    avl = new AVLTree();
 
     //draw(bst.toString());
 
@@ -22,25 +21,31 @@ function censor(key, value) {
 }
 
 function addElement(e){
-    bst.add(parseFloat(e))
-    console.log(bst)
+    avl.insertNode(parseFloat(e))
+    //avl.printAVLTree()
+
     mujo={}
-    mujo = JSON.stringify(bst["root"],censor)
+    mujo = JSON.stringify(avl["root_"],censor)
     cache = []
 
     mujo=mujo.replace(/null/gi,"{}")
     mujo=JSON.parse(mujo)
-    //console.log(mujo)
+
     draw(mujo)
+/*
+    console.log(avl)
+    console.log('aaaaaaaaaaaaaaaaaaa')*/
+
 
 }
 
 function delElement(e){
-    bst.remove(parseFloat(e))
+    avl.deleteNode(parseFloat(e))
+    //avl.printAVLTree()
 
     mujo={}
-    mujo = JSON.stringify(bst["root"],censor)
-    console.log(bst)
+    mujo = JSON.stringify(avl["root_"],censor)
+    cache = []
     mujo=mujo.replace(/null/gi,"{}")
     mujo=JSON.parse(mujo)
 

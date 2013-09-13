@@ -1,164 +1,196 @@
-// AVLTree ///////////////////////////////////////////////////////////////////
-//   This file is originally from the Concentré XML project (version 0.2.1)
-//   Licensed under GPL and LGPL
-//
-//   Modified by Jeremy Stephens.
+/**
+ * @author   redcrow
+ * @link     http://na5cent.blogspot.com/2013/06/avl-tree-javascript.html
+ * @create   25/06/2013
+ */
+var AVLTree = function() {
+    this.root_ = null;
+    var lastNode_;
+    var deleteNode_;
 
-// Pass in the attribute you want to use for comparing
-function AVLTree(n, attr) {
-    this.init(n, attr);
-}
+    this.getRoot = function() {
+        return this.root_;
+    };
 
-AVLTree.prototype.init = function(n, attr) {
-    this.attr = attr;
-    this.left = null;
-    this.right = null;
-    this.node = n;
-    this.depth = 1;
-    this.elements = [n];
-};
 
-AVLTree.prototype.balance = function() {
-    var ldepth = this.left  == null ? 0 : this.left.depth;
-    var rdepth = this.right == null ? 0 : this.right.depth;
-
-    if (ldepth > rdepth + 1) {
-        // LR or LL rotation
-        var lldepth = this.left.left  == null ? 0 : this.left.left.depth;
-        var lrdepth = this.left.right == null ? 0 : this.left.right.depth;
-
-        if (lldepth < lrdepth) {
-            // LR rotation consists of a RR rotation of the left child
-            this.left.rotateRR();
-            // plus a LL rotation of this node, which happens anyway
-        }
-        this.rotateLL();
-    } else if (ldepth + 1 < rdepth) {
-        // RR or RL rorarion
-        var rrdepth = this.right.right == null ? 0 : this.right.right.depth;
-        var rldepth = this.right.left  == null ? 0 : this.right.left.depth;
-
-        if (rldepth > rrdepth) {
-            // RR rotation consists of a LL rotation of the right child
-            this.right.rotateLL();
-            // plus a RR rotation of this node, which happens anyway
-        }
-        this.rotateRR();
-    }
-};
-
-AVLTree.prototype.rotateLL = function() {
-    // the left side is too long => rotate from the left (_not_ leftwards)
-    var nodeBefore = this.node;
-    var elementsBefore = this.elements;
-    var rightBefore = this.right;
-    this.node = this.left.node;
-    this.elements = this.left.elements;
-    this.right = this.left;
-    this.left = this.left.left;
-    this.right.left = this.right.right;
-    this.right.right = rightBefore;
-    this.right.node = nodeBefore;
-    this.right.elements = elementsBefore;
-    this.right.updateInNewLocation();
-    this.updateInNewLocation();
-};
-
-AVLTree.prototype.rotateRR = function() {
-    // the right side is too long => rotate from the right (_not_ rightwards)
-    var nodeBefore = this.node;
-    var elementsBefore = this.elements;
-    var leftBefore = this.left;
-    this.node = this.right.node;
-    this.elements = this.right.elements;
-    this.left = this.right;
-    this.right = this.right.right;
-    this.left.right = this.left.left;
-    this.left.left = leftBefore;
-    this.left.node = nodeBefore;
-    this.left.elements = elementsBefore;
-    this.left.updateInNewLocation();
-    this.updateInNewLocation();
-};
-
-AVLTree.prototype.updateInNewLocation = function() {
-    this.getDepthFromChildren();
-};
-
-AVLTree.prototype.getDepthFromChildren = function() {
-    this.depth = this.node == null ? 0 : 1;
-    if (this.left != null) {
-        this.depth = this.left.depth + 1;
-    }
-    if (this.right != null && this.depth <= this.right.depth) {
-        this.depth = this.right.depth + 1;
-    }
-};
-
-AVLTree.prototype.compare = function(n1, n2) {
-    v1 = n1[this.attr];
-    v2 = n2[this.attr];
-    if (v1 == v2) {
-        return 0;
-    }
-    if (v1 < v2) {
-        return -1;
-    }
-    return 1;
-};
-
-AVLTree.prototype.add = function(n)  {
-    var o = this.compare(n, this.node);
-    if (o == 0) {
-        this.elements.push(n);
-        return false;
-    }
-
-    var ret = false;
-    if (o == -1) {
-        if (this.left == null) {
-            this.left = new AVLTree(n, this.attr);
-            ret = true;
+    var height__ = function(node) {
+        if (node === null) {
+            return -1;
         } else {
-            ret = this.left.add(n);
-            if (ret) {
-                this.balance();
+            return Math.max(height__(node.getLeft()), height__(node.getRight())) + 1;
+        }
+    };
+
+    this.height = function(node) {
+        return height__(node);
+    };
+
+    var singleRotateRight_ = function(node) {
+        var tmp = node.getLeft();
+        node.setLeft(tmp.getRight());
+        tmp.setRight(node);
+
+        return tmp;
+    };
+
+    var singleRotateLeft_ = function(node) {
+        var tmp = node.getRight();
+        node.setRight(tmp.getLeft());
+        tmp.setLeft(node);
+
+        return tmp;
+    };
+
+    var doubleRotateRight_ = function(node) {
+        node.setLeft(singleRotateLeft_(node.getLeft()));
+        return singleRotateRight_(node);
+    };
+
+    var doubleRotateLeft_ = function(node) {
+        node.setRight(singleRotateRight_(node.getRight()));
+        return singleRotateLeft_(node);
+    };
+
+    var insert_ = function(key, node) {
+        if (node === null) {
+            node = new AVLNode(key);
+        } else if (key < node.getItem()) {
+            node.setLeft(insert_(key, node.getLeft()));
+            if (node.getLeft() !== null) {
+                if ((height__(node.getLeft()) - height__(node.getRight())) === 2) {
+                    if (key < node.getLeft().getItem()) {
+                        node = singleRotateRight_(node);
+                    } else {
+                        node = doubleRotateRight_(node);
+                    }
+                }
+            }
+        } else if (key > node.getItem()) {
+            node.setRight(insert_(key, node.getRight()));
+            if (node.getRight() !== null) {
+                if ((height__(node.getRight()) - height__(node.getLeft())) === 2) {
+                    if (key > node.getRight().getItem()) {
+                        node = singleRotateLeft_(node);
+                    } else {
+                        node = doubleRotateLeft_(node);
+                    }
+                }
+            }
+        } else {
+            //duplicate not allow!
+        }
+
+        return node;
+    };
+
+    this.insertNode = function(key) {
+        this.root_ = insert_(key, this.root_);
+    };
+
+    var delete_ = function(key, node) {
+        if (node === null) {
+            return null;
+        }
+        lastNode_ = node;
+
+        if (key < node.getItem()) {
+            node.setLeft(delete_(key, node.getLeft()));
+        } else {
+            deleteNode_ = node;
+            node.setRight(delete_(key, node.getRight()));
+        }
+
+        if (node === lastNode_) {
+            if (deleteNode_ !== null && key === deleteNode_.getItem()) {
+                if (deleteNode_ === lastNode_) {
+                    node = node.getLeft();
+                } else {
+                    var tmp = deleteNode_.getItem();
+                    deleteNode_.setItem(lastNode_.getItem());
+                    lastNode_.setItem(tmp);
+                    node = node.getRight();
+                }
+            }
+        } else {
+            if ((height__(node.getLeft()) - height__(node.getRight())) === 2) {
+                if (key < node.getLeft().getItem()) {
+                    node = singleRotateRight_(node);
+                } else {
+                    node = doubleRotateRight_(node);
+                }
+            }
+
+            if ((height__(node.getRight()) - height__(node.getLeft())) === 2) {
+                if (key > node.getRight().getItem()) {
+                    node = singleRotateLeft_(node);
+                } else {
+                    node = doubleRotateLeft_(node);
+                }
             }
         }
-    } else if (o == 1) {
-        if (this.right == null) {
-            this.right = new AVLTree(n, this.attr);
-            ret = true;
-        } else {
-            ret = this.right.add(n);
-            if (ret) {
-                this.balance();
+    };
+
+    this.deleteNode = function(key) {
+        lastNode_ = null;
+        deleteNode_ = null;
+        this.root_ = delete_(key, this.root_);
+    };
+
+    this.findMinNode = function(node) {
+        if (node !== null) {
+            while (node.getLeft() !== null) {
+                node = node.getLeft();
             }
         }
-    }
 
-    if (ret) {
-        this.getDepthFromChildren();
-    }
-    return ret;
+        return node;
+    };
+
+    this.findMaxNode = function(node) {
+        if (node !== null) {
+            while (node.getRight() !== null) {
+                node = node.getRight();
+            }
+        }
+
+        return node;
+    };
+
+    var removeMinNode_ = function(node) {
+        if (node === null) {
+            console.log('Error! tree is empty.');
+            return null;
+        } else if (node.getLeft() !== null) {
+            node.setLeft(removeMinNode_(node.getLeft()));
+            return node;
+        } else {
+            return node.getRight();
+        }
+    };
+
+    var removeMaxNode_ = function(node) {
+        if (node === null) {
+            console.log('Error! tree is empty.');
+            return null;
+        } else if (node.getRight() !== null) {
+            node.setRight(removeMaxNode_(node.getRight()));
+            return node;
+        } else {
+            return node.getLeft();
+        }
+    };
+
+    this.removeMinNode = function(node) {
+        return removeMinNode_(node);
+    };
+
+    this.removeMaxNode = function(node) {
+        return removeMaxNode_(node);
+    };
+
+    this.printAVLTree = function() {
+        console.log('Items : ');
+        this.root_.preorderPrint();
+        console.log();
+    };
 };
-
-// Given the beginning of a value, return the elements if there's a match
-AVLTree.prototype.findBest = function(value) {
-    var substr = this.node[this.attr].substr(0, value.length).toLowerCase();
-    var value = value.toLowerCase();
-
-    if (value < substr) {
-        if (this.left != null) {
-            return this.left.findBest(value);
-        }
-        return [];
-    }
-    else if (value > substr) {
-        if (this.right != null) {
-            return this.right.findBest(value);
-        }
-        return [];
-    }
-    return this.elements;
-}
