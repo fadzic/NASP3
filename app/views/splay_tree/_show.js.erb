@@ -48,3 +48,18 @@ function delElement(e){
     //console.log(mujo)
     draw(mujo)
 }
+
+function findElement(e){
+
+    spt.find(parseFloat(e))
+
+
+    mujo={}
+    mujo = JSON.stringify(spt['root_'],censor)
+    cache = []
+    mujo=mujo.replace(/null/gi,"{}")
+    console.log(mujo)
+    mujo=JSON.parse(mujo)
+
+    draw(mujo)
+}
