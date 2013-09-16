@@ -22,6 +22,9 @@ function censor(key, value) {
 
 function addElement(e){
 
+    spt.insert(parseFloat(e))
+
+
     mujo={}
     mujo = JSON.stringify(spt['root_'],censor)
     cache = []
@@ -33,6 +36,8 @@ function addElement(e){
 }
 
 function delElement(e){
+
+    spt.remove(parseFloat(e))
 
     mujo={}
     mujo = JSON.stringify(spt['root_'],censor)
