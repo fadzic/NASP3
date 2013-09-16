@@ -17,8 +17,6 @@
 //= require bstTree
 //= require bHeapTree
 //= require AVLTree
-//= require AVLNode
-//= require avlOrDie
 //= require rbTree
 //= require splayTree
 //= require twitter/bootstrap
