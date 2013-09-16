@@ -19,6 +19,6 @@
 //= require AVLTree
 //= require AVLNode
 //= require avlOrDie
-//= require buckets
 //= require rbTree
+//= require splayTree
 //= require twitter/bootstrap

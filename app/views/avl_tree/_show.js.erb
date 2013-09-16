@@ -21,35 +21,40 @@ function censor(key, value) {
 }
 
 function addElement(e){
-    avl.insertNode(parseFloat(e))
-    //avl.printAVLTree()
+
+    var id = parseFloat(e);
+    var dontCare = new RefBool(false);
+    avlT = AVLinsert(id, avlT, dontCare);
+    console.log(avlT)
+    console.log('aaa')
 
     mujo={}
-    mujo = JSON.stringify(avl["root_"],censor)
+    mujo = JSON.stringify(avlT,censor)
     cache = []
 
     mujo=mujo.replace(/null/gi,"{}")
     mujo=JSON.parse(mujo)
 
     draw(mujo)
-/*
-    console.log(avl)
-    console.log('aaaaaaaaaaaaaaaaaaa')*/
 
 
 }
 
 function delElement(e){
-    avl.deleteNode(parseFloat(e))
-    //avl.printAVLTree()
+
+    var id = parseFloat(e);
+    var dontCare = new RefBool(false);
+    avlT = AVLdel(id, avlT, dontCare);
+    console.log(avlT)
+    console.log('bbb')
+
 
     mujo={}
-    mujo = JSON.stringify(avl["root_"],censor)
+    mujo = JSON.stringify(avlT,censor)
     cache = []
     mujo=mujo.replace(/null/gi,"{}")
     mujo=JSON.parse(mujo)
 
-    //console.log(mujo)
     draw(mujo)
 
 }

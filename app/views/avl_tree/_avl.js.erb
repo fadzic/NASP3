@@ -1,0 +1,149 @@
+var avlT = null;
+var T = null;
+
+function AVLnode(e, L, R, bal)
+{
+    this.name=e;
+    this.children=[L,R];
+    this.balance=bal; // == height(right)-height(left)
+}
+
+function RefBool(bv) { this.b=bv; } // oh, for a reference parameter!
+
+//  before          after
+function rotateLeft(T)   //A       T-->z          x<--T
+{ var temp = T.children[0];    //l          . .        . .
+    T.children[0] = temp.children[1];  //l  temp-->x              z
+    temp.children[1] = T;       //i        . .            . .
+    T = temp;             //s          y            y
+    return T;             //o
+}                       //n
+
+function rotateRight(T)
+{ var temp = T.children[1];
+    T.children[1] = temp.children[0];
+    temp.children[0] = T;
+    T = temp;
+    return T;
+}
+
+function doubleLeft(T)
+{ T.children[0] = rotateRight(T.children[0]);
+    T = rotateLeft(T);
+    return T;
+}
+
+function doubleRight(T)
+{ T.children[1] = rotateLeft(T.children[1]);
+    T = rotateRight(T);
+    return T;
+}
+
+
+function leanLeft(T, HtChanged, leftGrew)                              // C
+{ if(T.balance == 1)                                                  // o
+{ T.balance =  0; HtChanged.b = ! leftGrew; }                      // m
+else if(T.balance == 0)                                             // p
+{ T.balance = -1; HtChanged.b = leftGrew; }                        // u
+else //LAllison T.balance == -1                                        t
+{ // height(right)-height(left) == -1 and cannot == -2                e
+    var LBal = T.children[0].balance;                                       // r
+    if( LBal-0 <= 0 )
+    { if( LBal == 0)//then right shrank                                S
+    { T.balance =-1; T.children[0].balance = 1; HtChanged.b = false; }  // c
+    else//LBal == -1                                                 i
+    { T.balance = 0; T.children[0].balance = 0; HtChanged.b = ! leftGrew; }
+        T = rotateLeft(T);
+    }
+    else// LBal == 1                                                 // L
+    { var LRBal = T.children[0].children[1].balance;                             // .
+        T.children[0].children[1].balance = 0; // will be new root                 // A
+        T.children[0].balance = LRBal == 1 ? -1 : 0;                         // l
+        T.balance = LRBal == -1 ? 1 : 0;                              // l
+        T = doubleLeft(T);                                            // i
+        HtChanged.b = ! leftGrew;                                     // s
+    }                                                               // o
+}                                                                  // n
+    return T;
+}//leanLeft
+
+
+function leanRight(T, HtChanged, rightGrew)
+{ if(T.balance == -1)
+{ T.balance = 0; HtChanged.b = ! rightGrew; }
+else if(T.balance == 0)
+{ T.balance = 1; HtChanged.b = rightGrew; }
+else //nosillAL  T.balance == 1
+{ // height(right)-height(left) == 1 and cannot == 2
+    var RBal = T.children[1].balance;
+    if( RBal-0 >= 0 )
+    { if( RBal == 0 )//then left shrank
+    { T.balance = 1; T.children[1].balance = -1; HtChanged.b = false; }
+    else//RBal == 1
+    { T.balance = 0; T.children[1].balance = 0; HtChanged.b = ! rightGrew; }
+        T = rotateRight(T);
+    }
+    else// RBal == -1
+    { var RLBal = T.children[1].children[0].balance;
+        T.children[1].children[0].balance = 0; // will be root
+        T.children[1].balance = RLBal == -1 ? 1 : 0;
+        T.balance = RLBal == 1 ? -1 : 0;
+        T = doubleRight(T);
+        HtChanged.b = ! rightGrew;
+    }
+}
+    return T;
+}//leanRight
+
+
+function AVLinsert(id, T, HtChanged)                      //L
+{ if(T == null)                                          //.
+{ T = new AVLnode(id, null, null, 0);                 //A
+    HtChanged.b = true;                                 //l
+}                                                     //l
+else if(id < T.name)                                    //i
+{ T.children[0]  = AVLinsert(id, T.children[0],  HtChanged);        //s
+    if( HtChanged.b ) T = leanLeft(T, HtChanged, true); //o
+}                                                     //n
+else if(id > T.name)                                    //UWA
+{ T.children[1] = AVLinsert(id, T.children[1], HtChanged);        //and
+    if( HtChanged.b ) T = leanRight(T, HtChanged, true);//Monash
+}
+else HtChanged.b = false;
+
+    return T;
+}//AVLinsert
+
+
+function AVLfindAndDel(T, subT, HtChanged)
+{ if( subT.children[0] == null ) // now have least elt in T's right subtree
+{ T.name = subT.name;    // i.e. delete old T.name
+    T.children[1] = AVLdel(T.name, T.children[1], HtChanged); // NB. easier with ref param
+}
+else AVLfindAndDel(T, subT.children[0], HtChanged);
+}
+
+function AVLdel(id, T, HtChanged)
+{ if(T != null)
+{ if( id < T.name )
+{ T.children[0]=AVLdel(id, T.children[0], HtChanged);
+    if( HtChanged.b ) T = leanRight(T, HtChanged, false);    //L
+}                                                          //.
+else if( id > T.name )                                       //A
+{ T.children[1]=AVLdel(id, T.children[1], HtChanged);                  //l
+    if( HtChanged.b ) T = leanLeft(T, HtChanged, false);     //l
+}                                                          //i
+else // id == T.name                                         //s
+if(     T.children[0]  == null) { T=T.children[1]; HtChanged.b = true; } //o
+else if(T.children[1] == null) { T=T.children[0];  HtChanged.b = true; } //n
+else // neither subtree is null                             //.
+{ AVLfindAndDel(T, T.children[1], HtChanged); // move right's least elt to top
+    // could have used left's greatest elt instead
+    if( HtChanged.b ) T = leanLeft(T, HtChanged, false);
+}
+}
+else// T == null
+    HtChanged.b = false;
+
+    return T;
+}// AVLdel

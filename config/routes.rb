@@ -8,4 +8,6 @@ NASP3::Application.routes.draw do
   match '/heap_tree' => 'heap_tree#show'
 
   match '/avl_tree' => 'avl_tree#show'
+
+  match '/splay_tree' => 'splay_tree#show'
 end

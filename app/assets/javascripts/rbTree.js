@@ -1,299 +1,543 @@
-(function(R, B) {
-    rbTree = function() {
-        return arguments.length && arguments.length == 4
-            ? new Node(arguments[0], arguments[1], arguments[2], arguments[3])
-            : new Leaf();
-    };
+var RedBlackTree = function() { this.initialize.apply(this, arguments); };
 
-    rbTree.prototype.isLeaf = function() {
-        return this instanceof Leaf;
-    };
+RedBlackTree.prototype = {
+    initialize: function(opts) {
+        if (typeof opts == 'undefined')
+            opts = {};
 
-    var Node = function(color, left, name, right) {
-        this.color  = color;
-        this.name  = name;
-        this.children=[left,right]
-    };
-
-    var F = new Function();
-    F.prototype = rbTree.prototype;
-    Node.prototype = new F();
-
-    Node.prototype.balanceLeft = function() {
-        switch(true) {
-            case this.color == B && this.children[0].color == R && this.children[0].children[0].color == R:
-                var name = this.children[0].name,
-                    right = new Node(B, this.children[0].children[1], this.name, this.children[1]),
-                    left  = new Node(B, this.children[0].children[0].children[0], this.children[0].children[0].name,
-                        this.children[0].children[0].children[1]);
-
-                return new Node(R, left, name, right);
-
-            case this.color == B && this.children[0].color == R && this.children[0].children[1].color == R:
-                var name = this.children[0].children[1].name,
-                    right = new Node(B, this.children[0].children[1].children[1], this.name, this.children[1]);
-                left  = new Node(B, this.children[0].children[0], this.children[0].name,
-                    this.children[0].children[1].children[0]);
-
-                return new Node(R, left, name, right);
-
-            default:
-                return this;
+        this.c = opts['comparator'] ?
+            opts['comparator']:
+            function(l, r) { return l.name < r.name ? -1: (l.name > r.name ? 1: 0); };
+        if (opts['accessors']) {
+            this.gp = opts['accessors']['parent']['get'];
+            this.sp = opts['accessors']['parent']['set'];
+            this.gl = opts['accessors']['left']['get'];
+            this.sl = opts['accessors']['left']['set'];
+            this.gr = opts['accessors']['right']['get'];
+            this.sr = opts['accessors']['right']['set'];
+            this.gc = opts['accessors']['color']['get'];
+            this.sc = opts['accessors']['color']['set'];
+        } else {
+            this.gp = function(i) { return i.p; };
+            this.sp = function(i, v) { i.p = v; };
+            this.gl = function(i) {
+                if(typeof i.children == 'undefined'){
+                    return null;
+                }
+                return i.children[0];
+            };
+            this.sl = function(i, v) {
+                if(typeof i.children == 'undefined'){
+                    i.children=[v,null]
+                }
+                else{
+                    i.children[0]=v
+                }
+            };
+            this.gr = function(i) {
+                if(typeof i.children == 'undefined'){
+                    return null;
+                }
+                return i.children[1];
+            };
+            this.sr = function(i, v) {
+                if(typeof i.children == 'undefined'){
+                    i.children=[null,v]
+                }
+                else{
+                    i.children[1]=v
+                }
+            };
+            this.gc = function(i) { return i.color; };
+            this.sc = function(i, v) { i.color = v; };
         }
-    };
 
-    Node.prototype.balanceRight = function() {
-        switch(true) {
-            case this.color == B && this.children[1].color == R && this.children[1].children[1].color == R:
-                var name = this.children[1].name,
-                    left  = new Node(B, this.children[0], this.name, this.children[1].children[0]),
-                    right = new Node(B, this.children[1].children[1].children[0], this.children[1].children[1].name,
-                        this.children[1].children[1].children[1]);
+    },
 
-                return new Node(R, left, name, right);
-
-            case this.color == B && this.children[1].color == R && this.children[1].children[0].color == R:
-                var name = this.children[1].children[0].name,
-                    left  = new Node(B, this.children[0], this.name, this.children[1].children[0].children[0]),
-                    right = new Node(B, this.children[1].children[0].children[1], this.children[1].name,
-                        this.children[1].children[1]);
-
-                return new Node(R, left, name, right);
-
-            default:
-                return this;
-        }
-    };
-
-    Node.prototype.insert = function(name) {
-        return (function(node) {
-            var self = arguments.callee;
-
-            if(node instanceof Leaf) {
-                return new Leaf().insert(name);
-            } else if(name < node.name) {
-                return new Node(
-                    node.color,
-                    self.call(node, node.children[0]),
-                    node.name,
-                    node.children[1]).balanceLeft();
-            } else if(name > node.name) {
-                return new Node(
-                    node.color,
-                    node.children[0],
-                    node.name,
-                    self.call(node, node.children[1])).balanceRight();
-            } else {
-                return node;
+    put: function(nn) {
+        var np = null, _n = this.root, c = 0, h = 0;
+        while (_n != null) {
+            np = _n;
+            c = this.c(_n, nn);
+            if (c == 0) {
+                var _np = this.gp(np), _nl = this.gl(np), _nr = this.gr(np);
+                this.sp(nn, _np);
+                this.sl(nn, _nl);
+                this.sr(nn, _nr);
+                if (_nl != null)
+                    this.sp(_nl, nn);
+                if (_nr != null)
+                    this.sp(_nr, nn);
+                if (_np != null) {
+                    if (h < 0) {
+                        this.sr(_np, nn);
+                    } else {
+                        this.sl(_np, nn);
+                    }
+                }
+                return false;
+            } else if (c < 0) {
+                _n = this.gr(_n);
+            } else if (c > 0) {
+                _n = this.gl(_n);
             }
-        })(this).blacken();
-    };
-
-    Node.prototype.contains = function(name) {
-        switch(true) {
-            case name < this.name:
-                return this.children[0].contains(name);
-
-            case name > this.name:
-                return this.children[1].contains(name);
-
-            case name == this.name:
-                return this;
-
-            default:
-                return null;
+            h = c;
         }
-    };
 
-    Node.prototype.size = function() {
-        return this.children[0].size() + 1 + this.children[1].size();
-    };
+        this.sc(nn, true);
+        this.sp(nn, np);
+        this.sl(nn, null);
+        this.sr(nn, null);
 
-    Node.prototype.depth = function() {
-        return Math.max(this.children[0].depth(), this.children[1].depth()) + 1;
-    };
-
-    Node.prototype.first = function() {
-        if(this.children[0] instanceof Leaf) {
-            return this;
+        if (np == null) {
+            this.sc(nn, false);
+            this.root = nn;
+            return true;
         } else {
-            return this.children[0].first();
-        }
-    };
-
-    Node.prototype.last = function() {
-        if(this.children[1] instanceof Leaf) {
-            return this
-        } else {
-            return this.children[1].last();
-        }
-    };
-
-    Node.prototype.blacken = function() {
-        return this.copy({color: B});
-    };
-
-    Node.prototype.copy = function(/* diff */) {
-        var copy = new Leaf().insert(this.name);
-        diff = arguments[0] || {};
-
-        for(var key in copy) {
-            if(key in diff && copy.hasOwnProperty(key))
-                copy[key] = diff[key];
+            if (c < 0)
+                this.sr(np, nn);
             else
-                copy[key] = this[key];
+                this.sl(np, nn);
         }
 
-        return copy;
-    };
+        var ni = nn;
 
-    Node.prototype.merge = function(node) {
-        return this.fromArray(node.toArray(), this);
-    };
-
-    Node.prototype.toArray = function() {
-        return this.left.toArray().concat([this.name], this.children[1].toArray());
-    };
-
-    Node.prototype.fromArray = function(array /*, acc*/) {
-        return (function(index, acc) {
-            var self = arguments.callee;
-
-            if(index < array.length) {
-                return self.call(acc, index + 1, acc.insert(array[index]));
+        while (this.gc(np)) {
+            var g = this.gp(np);
+            if (this.gl(g) == np) {
+                var u = this.gr(g), gg = this.gp(g);
+                if (u == null || !this.gc(u)) {
+                    // if the uncle is null or black, perform the right rotate
+                    if (c < 0) {
+                        this.sl(g, this.gr(ni));
+                        if (this.gr(ni) != null)
+                            this.sp(this.gr(ni), g);
+                        this.sr(np, this.gl(ni));
+                        if (this.gl(ni) != null)
+                            this.sp(this.gl(ni), np);
+                        this.sl(ni, np), this.sp(np, ni);
+                        this.sr(ni, g), this.sp(g, ni), this.sc(g, true);
+                        this.sp(ni, gg), this.sc(ni, false);
+                        if (gg != null) {
+                            if (this.gl(gg) == g)
+                                this.sl(gg, ni);
+                            else
+                                this.sr(gg, ni);
+                        } else {
+                            this.root = ni;
+                            break;
+                        }
+                        ni = np, np = this.gp(np);
+                    } else {
+                        this.sl(np, ni), this.sc(ni, true);
+                        this.sl(g, this.gr(np));
+                        if (this.gr(np) != null)
+                            this.sp(this.gr(np), g);
+                        this.sr(np, g), this.sp(g, np), this.sc(g, true);
+                        this.sp(np, gg), this.sc(np, false);
+                        if (gg != null) {
+                            if (this.gl(gg) == g)
+                                this.sl(gg, np);
+                            else
+                                this.sr(gg, np);
+                        } else {
+                            this.root = np;
+                            break;
+                        }
+                    }
+                    g = gg;
+                    c = 1;
+                } else {
+                    // recolor the parent and the uncle if they are both red.
+                    this.sc(np, false), this.sc(u, false);
+                    if (gg == null) {
+                        this.sc(g, false);
+                        break;
+                    }
+                    this.sc(g, true);
+                    if (this.gl(gg) == g)
+                        c = 1;
+                    else
+                        c = -1;
+                    ni = g;
+                    np = gg;
+                }
             } else {
-                return acc;
+                var u = this.gl(g), gg = this.gp(g);
+                if (u == null || !this.gc(u)) {
+                    // if the uncle is null, perform the left rotate
+                    var gg = this.gp(g);
+                    if (c < 0) {
+                        this.sr(g, this.gl(np));
+                        if (this.gl(np) != null)
+                            this.sp(this.gl(np), g);
+                        this.sl(np, g), this.sp(g, np), this.sc(g, true);
+                        this.sr(np, ni), this.sc(ni, true);
+                        this.sp(np, gg), this.sc(np, false);
+                        if (gg != null) {
+                            if (this.gl(gg) == g)
+                                this.sl(gg, np);
+                            else
+                                this.sr(gg, np);
+                        } else {
+                            this.root = np;
+                            break;
+                        }
+                    } else {
+                        this.sr(g, this.gl(ni));
+                        if (this.gl(ni) != null)
+                            this.sp(this.gl(ni), g);
+                        this.sl(np, this.gr(ni));
+                        if (this.gr(ni) != null)
+                            this.sp(this.gr(ni), np);
+                        this.sl(ni, g), this.sp(g, ni), this.sc(g, true);
+                        this.sr(ni, np), this.sp(np, ni);
+                        this.sp(ni, gg), this.sc(ni, false);
+                        if (gg != null) {
+                            if (this.gl(gg) == g)
+                                this.sl(gg, ni);
+                            else
+                                this.sr(gg, ni);
+                        } else {
+                            this.root = ni;
+                            break;
+                        }
+                        ni = np, np = this.gp(np);
+                    }
+                    g = gg;
+                    c = -1;
+                } else {
+                    // recolor the parent and the uncle if they are both red.
+                    this.sc(np, false), this.sc(u, false);
+                    if (gg == null) {
+                        this.sc(g, false);
+                        break;
+                    }
+                    this.sc(g, true);
+                    if (this.gl(gg) == g)
+                        c = 1;
+                    else
+                        c = -1;
+                    ni = g;
+                    np = gg;
+                }
             }
-        })(0, arguments[1] || new Leaf());
-    };
+        }
+        return true;
+    },
 
-    Node.prototype.toString = function() {
-        return "Node(" + this.color + ", " + this.name + ")";
-    };
+    remove: function(v) {
+        var n = this.root, c = 0, h = 0;
+        while (n != null) {
+            c = this.c(n, v);
+            if (c == 0) {
+                break;
+            } else if (c < 0) {
+                n = this.gr(n);
+            } else if (c > 0) {
+                n = this.gl(n);
+            }
+            h = c;
+        }
 
-    var Leaf = function() {
-        this.color = B;
-        this.children = [null,null];
-        this.name = null;
-        this.name = "leaf"
-    };
+        if (n == null) {
+            return false;
+        }
 
-    var F = new Function();
-    F.prototype = Node.prototype
-    Leaf.prototype = new F();
+        var np = null;
+        while (n != null) {
+            np = this.gp(n);
+            var nl = this.gl(n), nr = this.gr(n), nc = this.gc(n), hh = 0;
+            if (nl != null && this.gr(nl) != null) {
+                var ngcr = this.gr(nl);
+                hh = -1;
+                for (; this.gr(ngcr) != null; ngcr = this.gr(ngcr));
 
-    Leaf.prototype.insert = function(name) {
-        return new Node(R, new Leaf(), name, new Leaf());
-    };
+                if (this.gl(ngcr) != null)
+                    this.sp(this.gl(ngcr), n);
+                if (this.gr(ngcr) != null)
+                    this.sp(this.gr(ngcr), n);
+                if (this.gl(n) != null)
+                    this.sp(this.gl(n), ngcr);
+                if (this.gr(n) != null)
+                    this.sp(this.gr(n), ngcr);
+                this.sl(n, this.gl(ngcr));
+                this.sr(n, this.gr(ngcr));
+                this.sp(n, this.gp(ngcr));
+                this.sc(n, this.gc(ngcr));
+                this.sr(this.gp(ngcr), n);
+                this.sl(ngcr, nl);
+                this.sr(ngcr, nr);
+                this.sp(ngcr, np);
+                this.sc(ngcr, nc);
+                if (np != null) {
+                    if (h < 0)
+                        this.sr(np, ngcr);
+                    else
+                        this.sl(np, ngcr);
+                } else {
+                    this.root = ngcr;
+                }
+            } else if (nr != null && this.gl(nr) != null) {
+                var ngcl = this.gl(nr);
+                hh = 1;
+                for (; this.gl(ngcl) != null; ngcl = this.gl(ngcl));
 
-    Leaf.prototype.remove = function(name) {
-        return null;
-    };
+                if (this.gl(ngcl) != null)
+                    this.sp(this.gl(ngcl), n);
+                if (this.gr(ngcl) != null)
+                    this.sp(this.gr(ngcl), n);
+                if (this.gl(n) != null)
+                    this.sp(this.gl(n), ngcl);
+                if (this.gr(n) != null)
+                    this.sp(this.gr(n), ngcl);
+                this.sl(n, this.gl(ngcl));
+                this.sr(n, this.gr(ngcl));
+                this.sp(n, this.gp(ngcl));
+                this.sc(n, this.gc(ngcl));
+                this.sl(this.gp(ngcl), n);
+                this.sl(ngcl, nl);
+                this.sr(ngcl, nr);
+                this.sp(ngcl, np);
+                this.sc(ngcl, nc);
+                if (np != null) {
+                    if (h < 0)
+                        this.sr(np, ngcl);
+                    else
+                        this.sl(np, ngcl);
+                } else {
+                    this.root = ngcl;
+                }
+            } else {
+                break;
+            }
+            h = hh;
+        }
 
-    Leaf.prototype.contains = function() {
-        return null;
-    };
+        var s = null;
+        if (nl != null) {
+            if (nr != null)
+                this.sp(nr, nl);
+            this.sp(nl, np), this.sr(nl, nr);
+            if (np != null) {
+                if (h < 0)
+                    this.sr(np, nl);
+                else
+                    this.sl(np, nl);
+            } else {
+                this.root = nl;
+            }
+            np = nl, nl = this.gl(np), s = nr, nr = null;
+            h = 1;
+        } else if (nr != null) {
+            this.sp(nr, np), this.sl(nr, nl);
+            if (np != null) {
+                if (h < 0)
+                    this.sr(np, nr);
+                else
+                    this.sl(np, nr);
+            } else {
+                this.root = nr;
+            }
+            np = nr, nr = this.gr(np), s = nl, nl = null;
+            h = -1;
+        } else {
+            if (np != null) {
+                if (h < 0) {
+                    this.sr(np, null);
+                    s = this.gl(np);
+                } else {
+                    this.sl(np, null);
+                    s = this.gr(np);
+                }
+            } else {
+                this.root = nl != null ? nl: nr;
+                if (this.root != null) {
+                    this.sc(this.root, false);
+                    this.sp(this.root, null);
+                }
+            }
+        }
 
-    Leaf.prototype.nodes = function() {
-        return [];
-    };
+        for (;;) {
+            if (np != null) {
+                if (nc)
+                    break;
 
-    Leaf.prototype.edges = function() {
-        return [];
-    };
+                var g = this.gp(np), npc = this.gc(np);
+                if (s == null) {
+                    if (npc)
+                        this.sc(np, false);
+                    break;
+                }
 
-    Leaf.prototype.size = function() {
-        return 0;
-    };
+                if (h < 0) {
+                    if (this.gc(s)) {
+                        if (this.gr(s) != null)
+                            this.sp(this.gr(s), np);
+                        this.sl(np, this.gr(s));
+                        this.sc(np, true), npc = true;
+                        this.sp(np, s), this.sr(s, np);
+                        this.sp(s, g), this.sc(s, false);
+                        if (g != null) {
+                            if (this.gl(g) == np)
+                                this.sl(g, s);
+                            else
+                                this.sr(g, s);
+                        } else {
+                            this.root = s;
+                        }
+                        g = s;
+                        s = this.gl(np);
+                    }
 
-    Leaf.prototype.depth = function() {
-        return 0;
-    };
+                    if (s == null)
+                        break;
 
-    Leaf.prototype.first = function() {
-        return null;
-    };
+                    var slc = this.gl(s) != null ? this.gc(this.gl(s)): false,
+                        src = this.gr(s) != null ? this.gc(this.gr(s)): false;
+                    if (src) {
+                        var srl = this.gl(this.gr(s));
+                        if (srl != null)
+                            this.sp(srl, s);
+                        this.sl(np, this.gr(s));
+                        this.sp(this.gr(s), np);
+                        this.sc(this.gr(s), false);
+                        this.sp(s, this.gl(np));
+                        this.sr(s, this.gl(this.gl(np)));
+                        this.sl(this.gl(np), s);
+                        this.sc(s, true);
+                        s = this.gl(np);
+                        slc = this.gl(s) != null ? this.gc(this.gl(s)): false;
+                        src = this.gr(s) != null ? this.gc(this.gr(s)): false;
+                    } else {
+                        if (!slc) {
+                            if (npc) {
+                                this.sc(np, false);
+                                this.sc(s, true);
+                            } else {
+                                this.sc(s, true);
+                                if (g != null) {
+                                    if (this.gl(g) == np) {
+                                        h = 1;
+                                        s = this.gr(g);
+                                    } else {
+                                        h = -1;
+                                        s = this.gl(g);
+                                    }
+                                }
+                                nl = this.gl(np), nr = this.gr(np), n = np, nc = this.gc(np);
+                                np = g;
+                                continue;
+                            }
+                        }
+                    }
 
-    Leaf.prototype.last = function() {
-        return null;
-    };
+                    if (slc) {
+                        this.sc(this.gl(s), false);
+                        if (this.gr(s) != null)
+                            this.sp(this.gr(s), np);
+                        this.sl(np, this.gr(s));
+                        this.sp(np, s);
+                        this.sr(s, np);
+                        this.sc(np, this.gc(s));
+                        this.sp(s, g);
+                        this.sc(s, npc);
+                        if (g != null) {
+                            if (this.gl(g) == np)
+                                this.sl(g, s);
+                            else
+                                this.sr(g, s);
+                        } else {
+                            this.root = s;
+                        }
+                    }
+                } else {
+                    if (this.gc(s)) {
+                        if (this.gl(s) != null)
+                            this.sp(this.gl(s), np);
+                        this.sr(np, this.gl(s));
+                        this.sc(np, true), npc = true;
+                        this.sp(np, s), this.sl(s, np);
+                        this.sp(s, g), this.sc(s, false);
+                        if (g != null) {
+                            if (this.gl(g) == np)
+                                this.sl(g, s);
+                            else
+                                this.sr(g, s);
+                        } else {
+                            this.root = s;
+                        }
+                        g = s;
+                        s = this.gr(np);
+                    }
 
-    Leaf.prototype.copy = function() {
-        return new Leaf();
-    };
+                    if (s == null)
+                        break;
 
-    Leaf.prototype.paths = function() {
-        return [];
-    };
+                    var slc = this.gl(s) != null ? this.gc(this.gl(s)): false,
+                        src = this.gr(s) != null ? this.gc(this.gr(s)): false;
+                    if (slc) {
+                        var slr = this.gr(this.gl(s));
+                        if (slr)
+                            this.sp(slr, s);
+                        this.sr(np, this.gl(s));
+                        this.sp(this.gl(s), np);
+                        this.sc(this.gl(s), false);
+                        this.sp(s, this.gr(np));
+                        this.sl(s, this.gr(this.gr(np)));
+                        this.sr(this.gr(np), s);
+                        this.sc(s, true);
+                        s = this.gr(np);
+                        slc = this.gl(s) != null ? this.gc(this.gl(s)): false,
+                            src = this.gr(s) != null ? this.gc(this.gr(s)): false;
+                    } else {
+                        if (!src) {
+                            if (npc) {
+                                this.sc(np, false);
+                                this.sc(s, true);
+                            } else {
+                                this.sc(s, true);
+                                if (g != null) {
+                                    if (this.gl(g) == np) {
+                                        h = 1;
+                                        s = this.gr(g);
+                                    } else {
+                                        h = -1;
+                                        s = this.gl(g);
+                                    }
+                                }
+                                nl = this.gl(np), nr = this.gr(np), n = np, nc = this.gc(np);
+                                np = g;
+                                continue;
+                            }
+                        }
+                    }
 
-    Leaf.prototype.toArray = function() {
-        return [];
-    };
+                    if (src) {
+                        this.sc(this.gr(s), false);
+                        if (this.gl(s) != null)
+                            this.sp(this.gl(s), np);
+                        this.sr(np, this.gl(s));
+                        this.sp(np, s);
+                        this.sl(s, np);
+                        this.sc(np, this.gc(s));
+                        this.sp(s, g);
+                        this.sc(s, npc);
+                        if (g != null) {
+                            if (this.gl(g) == np)
+                                this.sl(g, s);
+                            else
+                                this.sr(g, s);
+                        } else {
+                            this.root = s;
+                        }
+                    }
+                }
+            }
+            break;
+        }
 
-    Leaf.prototype.toString = function() {
-        return "Leaf";
-    };
-})("red", "black");
-
-rbTree.prototype.nodes = function() {
-    return this.children[0].nodes().concat([this], this.children[1].nodes());
+        return true;
+    }
 };
-
-rbTree.prototype.edges = function() {
-    var edges = [];
-
-    if(!this.children[0].isLeaf()) {
-        edges.push([this.name, this.children[0].name, "L"]);
-    }
-
-    if(!this.children[1].isLeaf()) {
-        edges.push([this.name, this.children[1].name, "R"]);
-    }
-
-    return edges.concat(this.children[0].edges(), this.children[1].edges());
-};
-
-rbTree.prototype.paths = function(/* accumulation */) {
-    var accumulation = arguments[0] || [],
-        paths = [];
-
-    if(!this.children[0].isLeaf()) {
-        paths.push(accumulation.slice(0, -1).concat([this.name, this.children[0].name]));
-    }
-
-    if(!this.children[1].isLeaf()) {
-        paths.push(accumulation.slice(0, -1).concat([this.name, this.children[1].name]));
-    }
-
-    return paths.concat(this.children[0].paths(paths[0] || []), this.children[1].paths(paths[0] || []));
-};
-
-rbTree.prototype.toDot = function() {
-    var edges = this.edges(),
-        nodes = this.nodes(),
-        out   = [];
-
-    for(var i = 0, j = nodes.length; i < j; i++) {
-        var node = nodes[i], font = node.color == "red" ? "black" : "white";
-        out.push(node.name + " [fontcolor=" + font + ",fillcolor=" + node.color + ",style=filled];");
-    }
-
-    for(var i = 0, j = edges.length; i < j; i++) {
-        var edge = edges[i];
-        out.push(edge[0] + " -> " + edge[1] + " [label=\"" + edge[2] + "\"];");
-    }
-
-    out.unshift("digraph G {");
-    out.push("}");
-
-    return out.join("\n");
-};
-
-
-/* Usage:
- *
- * var tree = new rbTree().fromArray([26, 17, 41, 10, 12, 16, 15, 30, 28, 35, 39, 47, 23, 20]);
- * tree = tree.insert(23);
- *
- * console.log(tree.toDot());
- */

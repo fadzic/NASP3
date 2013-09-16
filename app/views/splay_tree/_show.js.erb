@@ -2,10 +2,8 @@ $(function() {
 
     init();
 
-    //rbt = new rbTree()
-    rbt = new RedBlackTree()
+    spt = new SplayTree()
 
-    //draw(bst.toString());
 })
 
 var cache = [];
@@ -24,10 +22,8 @@ function censor(key, value) {
 
 function addElement(e){
 
-    rbt.put({name:parseFloat(e)})
-
     mujo={}
-    mujo = JSON.stringify(rbt['root'],censor)
+    mujo = JSON.stringify(spt['root_'],censor)
     cache = []
     mujo=mujo.replace(/null/gi,"{}")
     console.log(mujo)
@@ -38,10 +34,8 @@ function addElement(e){
 
 function delElement(e){
 
-    rbt.remove({name:parseFloat(e)})
-
     mujo={}
-    mujo = JSON.stringify(rbt['root'],censor)
+    mujo = JSON.stringify(spt['root_'],censor)
     cache = []
     mujo=mujo.replace(/null/gi,"{}")
     mujo=JSON.parse(mujo)

@@ -64,10 +64,10 @@ function draw(d) {
         .attr('r', 10)
         .attr('fill',function(d){
             if (d.color){
-                return d.color ;
+                return 'red' ;
             }else
             {
-                return "blue";
+                return "black";
             }
 
         });
