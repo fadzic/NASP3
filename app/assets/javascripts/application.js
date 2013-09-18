@@ -16,7 +16,6 @@
 //= require drawtree
 //= require bstTree
 //= require bHeapTree
-//= require AVLTree
 //= require rbTree
 //= require splayTree
 //= require twitter/bootstrap

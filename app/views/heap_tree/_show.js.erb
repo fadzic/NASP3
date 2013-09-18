@@ -1,6 +1,10 @@
 $(function() {
 
-    init();
+    after = new drawTree('#after');
+    before = new drawTree('#before')
+
+    befor_v = {}
+    mujo={}
 
     bst = new heapTree
 
@@ -22,28 +26,38 @@ function censor(key, value) {
 }
 
 function addElement(e){
+    document.getElementById("label").innerHTML=""
     bst.insert(parseFloat(e))
-    mujo={}
+    before_v = mujo
     mujo = JSON.stringify(bst["root"],censor)
     cache = []
 
         mujo=mujo.replace(/null/gi,"{}")
         mujo=JSON.parse(mujo)
         //console.log(mujo)
-        draw(mujo)
+    after.draw(mujo,'#after')
+    before.draw(before_v,'#before')
 
 }
 
 function delElement(e){
+    document.getElementById("label").innerHTML=""
     bst.remove(parseFloat(e))
 
-    mujo={}
+    before_v = mujo
     mujo = JSON.stringify(bst["root"],censor)
     cache = []
         mujo=mujo.replace(/null/gi,"{}")
         mujo=JSON.parse(mujo)
 
         //console.log(mujo)
-        draw(mujo)
+    after.draw(mujo,'#after')
+    before.draw(before_v,'#before')
 
+}
+
+function findElement(e){
+    var found = bst.find(parseFloat(e))
+    if(found){document.getElementById("label").innerHTML="Pronaden!"}
+    else{document.getElementById("label").innerHTML="Nije pronaden!"}
 }

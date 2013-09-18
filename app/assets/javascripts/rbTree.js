@@ -539,5 +539,31 @@ RedBlackTree.prototype = {
         }
 
         return true;
+    },
+
+    find: function(id){
+        var found       = false,
+            parent      = null,
+            current     = this.root
+
+        while(!found && current){
+
+            //if the name is less than the current node's, go left
+            if (id < current.name){
+                parent = current;
+                current = current.children[0];
+
+                //if the name is greater than the current node's, go children[1]
+            } else if (id > current.name){
+                parent = current;
+                current = current.children[1];
+
+                //names are equal, found it!
+            } else {
+                found = true;
+            }
+        }
+
+        return found;
     }
 };
