@@ -42,7 +42,7 @@ function addElement(e){
 
 function delElement(e){
     document.getElementById("label").innerHTML=""
-    bst.remove(parseFloat(e))
+    bst.pop()
 
     before_v = mujo
     mujo = JSON.stringify(bst["root"],censor)
@@ -60,4 +60,8 @@ function findElement(e){
     var found = bst.find(parseFloat(e))
     if(found){document.getElementById("label").innerHTML="Pronaden!"}
     else{document.getElementById("label").innerHTML="Nije pronaden!"}
+}
+
+function refresh(){
+    location.reload();
 }

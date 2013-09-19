@@ -182,7 +182,7 @@ heapTree.prototype = {
         if (!this.root)
             return null;
 
-        return this.remove(this.root);
+        return this.remove(this.root.name);
     },
 
     remove : function(v) {
