@@ -44,7 +44,7 @@ function addElement(e){
 function delElement(e){
     document.getElementById("label").innerHTML=""
 
-    spt.remove(parseFloat(e))
+    spt.delete(parseFloat(e))
 
     before_v = mujo
     mujo = JSON.stringify(spt['root_'],censor)

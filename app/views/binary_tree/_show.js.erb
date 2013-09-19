@@ -11,6 +11,8 @@ $(function() {
     //draw(bst.toString());
 })
 
+var cache = [];
+
 
 function censor(key, value) {
     if (typeof value === 'object' && value !== null) {
@@ -27,10 +29,11 @@ function censor(key, value) {
 function addElement(e){
     document.getElementById("label").innerHTML=""
 
-    bst.add(parseFloat(e))
+    bst.insert(parseFloat(e))
 
     before_v = mujo
-    mujo = JSON.stringify(bst["_root"])
+    mujo = JSON.stringify(bst["root_"],censor)
+    cache = []
     mujo=mujo.replace(/null/gi,"{}")
     mujo=JSON.parse(mujo)
 
@@ -40,10 +43,12 @@ function addElement(e){
 
 function delElement(e){
     document.getElementById("label").innerHTML=""
-    bst.remove(parseFloat(e))
+
+    bst.delete(parseFloat(e))
 
     before_v = mujo
-    mujo = JSON.stringify(bst["_root"])
+    mujo = JSON.stringify(bst["root_"],censor)
+    cache = []
     mujo=mujo.replace(/null/gi,"{}")
     mujo=JSON.parse(mujo)
 

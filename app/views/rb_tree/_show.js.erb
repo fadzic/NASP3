@@ -29,13 +29,12 @@ function censor(key, value) {
 function addElement(e){
     document.getElementById("label").innerHTML=""
 
-    rbt.put({name:parseFloat(e)})
+    rbt.insert(parseFloat(e))
 
     before_v = mujo
-    mujo = JSON.stringify(rbt['root'],censor)
+    mujo = JSON.stringify(rbt['root_'],censor)
     cache = []
     mujo=mujo.replace(/null/gi,"{}")
-    console.log(mujo)
     mujo=JSON.parse(mujo)
 
     after.draw(mujo,'#after')
@@ -44,11 +43,12 @@ function addElement(e){
 
 function delElement(e){
     document.getElementById("label").innerHTML=""
-
-    rbt.remove({name:parseFloat(e)})
+    console.log(rbt);
+    rbt.delete(parseFloat(e))
+    console.log(rbt);
 
     before_v = mujo
-    mujo = JSON.stringify(rbt['root'],censor)
+    mujo = JSON.stringify(rbt['root_'],censor)
     cache = []
     mujo=mujo.replace(/null/gi,"{}")
     mujo=JSON.parse(mujo)
@@ -59,7 +59,7 @@ function delElement(e){
 }
 
 function findElement(e){
-    var found = rbt.find(parseFloat(e))
+    /*var found = rbt.find(parseFloat(e))
     if(found){document.getElementById("label").innerHTML="Pronaden!"}
-    else{document.getElementById("label").innerHTML="Nije pronaden!"}
+    else{document.getElementById("label").innerHTML="Nije pronaden!"}*/
 }
